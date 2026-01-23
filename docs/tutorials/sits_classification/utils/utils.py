@@ -11,7 +11,13 @@ def dates2doys(dates: list[str]):
     '''TODO: convert a list of dates (list of str) 
     to a list of days of year.
     '''
-    raise NotImplementedError
+    doys = []
+    for date in dates:
+        month = date[5:7]
+        day = date[8:]
+        doy = int(month) * 30 + int(day)
+        doys.append(doy)
+    return torch.tensor(doys).long()
 
 
 def pad_tensor(x: torch.Tensor, l: int, pad_value=0.):
@@ -45,8 +51,7 @@ def fill_ts(ts: torch.Tensor, doys: torch.Tensor, full_doys: torch.Tensor):
 def get_params(model: torch.nn.Module):
     '''TODO: compute the number of trainable parameters of a model.
     '''
-    raise NotImplementedError
-
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 def get_flops(model, inp: Union[torch.Tensor, Tuple], with_backward=False):
     '''Credit: https://alessiodevoto.github.io/Compute-Flops-with-Pytorch-built-in-flops-counter/
@@ -117,3 +122,4 @@ def rgb_render(
         data_ready = data_ready[:, :, 0]
 
     return data_ready, out_dmin, out_dmax
+

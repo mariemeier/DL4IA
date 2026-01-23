@@ -32,11 +32,17 @@ def main(cfg):
     padding = Padding(pad_value=cfg['pad_value'])
 
     train_data_loader = torch.utils.data.DataLoader(
-        ...
+        train_dataset, 
+        collate_fn = padding.pad_collate, 
+        batch_size = cfg['batch_size'],
+        shuffle = True 
     )
 
     val_data_loader = torch.utils.data.DataLoader(
-        ...
+        val_dataset, 
+        collate_fn = padding.pad_collate, 
+        batch_size = cfg['batch_size'],
+        shuffle = True 
     )
 
     encoder = Transformer(
@@ -108,11 +114,15 @@ def main(cfg):
             doys = doys.to(device)
             labels = labels.to(device)
 
-            z, _ = encoder(data, doys)
-            logits = classifier(z)
+            z, _ = encoder(data, doys) # (batch_size, d_model)
+            logits = classifier(z) # (batch_size, n_classes) 
+            # ex: logits = [[ 0.2, 1.0, -0.5, 0.1],   # séquence 1
+            #               [ 0.8, 0.1, 0.0, 0.3],   # séquence 2
+            #               [-0.2, 0.0, 0.5, 1.2]]   # séquence 3
+            # Chaque ligne = score non normalisé pour chaque classe
             loss = criterion(logits, labels)
-            pred = ...
-            accuracy = ...
+            pred = logits.argmax(dim=1)
+            accuracy = (pred == labels).float().mean().item()
 
             loss.backward()
             optimizer.step()
@@ -136,8 +146,8 @@ def main(cfg):
                 z, _ = encoder(data, doys)
                 logits = classifier(z)
             loss = criterion(logits, labels)
-            pred = ...
-            accuracy = ...
+            pred = logits.argmax(dim=1)
+            accuracy = (pred == labels).float().mean().item()
 
             val_loss += loss.item() / len(val_data_loader)
             val_acc += accuracy / len(val_data_loader)

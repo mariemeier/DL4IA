@@ -112,8 +112,9 @@ class Transformer(nn.Module):
         if doys is None:
             doys = torch.zeros((data.shape[0], data.shape[1]))
 
-        embeddings = ...
-        temporal_mask = ...
+        embeddings = self.embedding(data)
+        temporal_mask = (data.sum(dim=(2,3)) != self.pad_value).float()  # data = (B, T, n_channels, n_pixels), après somme = (B, T)
+        temporal_mask = temporal_mask.bool()  # <- convertit en bool
         
         if self.return_attns:
             enc_output, attns = self.encoder(embeddings, doys, temporal_mask)
@@ -121,7 +122,7 @@ class Transformer(nn.Module):
             enc_output = self.encoder(embeddings, doys, temporal_mask)
             attns = None
 
-        enc_output = ...
+        enc_output = self.temporal_aggregator(enc_output, temporal_mask)
 
         return enc_output, attns
     

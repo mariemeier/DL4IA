@@ -12,11 +12,18 @@ class EmbeddingLayer(nn.Module):
     '''TODO: compute embeddings from raw pixel set data.
     '''
 
-    def __init__(self):
+    def __init__(self, n_channels, n_pixels, d_model):
         super(EmbeddingLayer, self).__init__()
 
+        self.d_model = d_model
+        self.linear = nn.Linear(n_channels * n_pixels, d_model)
+
     def forward(self, x):
-        raise NotImplementedError
+        batch_size, len_seq, n_channels, n_pixels = x.shape
+        x = x.view(batch_size * len_seq, n_channels * n_pixels)
+        x = F.relu(self.linear(x))
+        x = x.view(batch_size, len_seq, self.d_model)
+        return x
     
 
 class NDVI(nn.Module):
@@ -75,8 +82,10 @@ class PositionalEncoding(nn.Module):
     TODO: Update the positional encoding as described in "Satellite Image Time Series 
     Classification with Pixel-Set Encoders and Temporal Self-Attention, Garnot et al."
     '''
-    def __init__(self, d_hid, n_position=200):
+    def __init__(self, d_hid, n_position=365, T=1000):
         super(PositionalEncoding, self).__init__()
+
+        self.T = T # new parameter : scaling factor for the positional encoding
 
         # Not a parameter
         self.register_buffer('pos_table', self._get_sinusoid_encoding_table(n_position, d_hid))
@@ -85,7 +94,7 @@ class PositionalEncoding(nn.Module):
         ''' Sinusoid position encoding table '''
 
         def get_position_angle_vec(position):
-            return [position / np.power(10000, 2 * (hid_j // 2) / d_hid) for hid_j in range(d_hid)]
+            return [position / np.power(self.T, 2 * (hid_j // 2) / d_hid) for hid_j in range(d_hid)]
 
         sinusoid_table = np.array([get_position_angle_vec(pos_i) for pos_i in range(n_position)])
         sinusoid_table[:, 0::2] = np.sin(sinusoid_table[:, 0::2])  # dim 2i
@@ -93,10 +102,17 @@ class PositionalEncoding(nn.Module):
 
         return torch.FloatTensor(sinusoid_table).unsqueeze(0)
 
-    def forward(self, x):
+    def forward(self, doys):
         """TODO: update forward function to return the positional embedding only.
         """
-        return x + self.pos_table[:, :x.size(1)].clone().detach()
+        batch_size = doys.shape[0]
+        pos_table = self.pos_table # (1, n_position, d_hid)
+        pos_table = pos_table.repeat(batch_size, 1, 1)  # (batch_size, n_position, d_hid)
+        doys = doys.long()
+        doys = doys.unsqueeze(-1).repeat(1, 1, pos_table.shape[-1])  # doys avant:(batch_size, seq_len) doys après :(batch_size, n_position, d_hid)
+        positional_embedding = torch.gather(pos_table, index=doys, dim=1)
+
+        return positional_embedding
     
 
 class Temporal_Aggregator(nn.Module):
@@ -108,7 +124,12 @@ class Temporal_Aggregator(nn.Module):
 
     def forward(self, data, mask):
         if self.mode == 'mean':
-            raise NotImplementedError
+            mask = mask.unsqueeze(-1) # mask après : (batch_size, seq_len, 1), data : (batch_size, seq_len, d_model)
+            data = data * mask
+            sum_data = torch.sum(data, dim=1)  # (B, d_model)
+            lengths = mask.sum(dim=1)        # (B, 1) nombre d'éléments non masqués = de dates valides
+            out = sum_data / lengths.clamp(min=1e-6)
+
         elif self.mode == 'identity':
             out = data
         else:

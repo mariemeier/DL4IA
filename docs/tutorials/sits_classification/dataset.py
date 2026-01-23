@@ -96,7 +96,15 @@ class PixelSetData(Dataset):
 
 
     def __len__(self):
-        raise NotImplementedError
+        return len(self.labels)
     
     def __getitem__(self, i):
-        raise NotImplementedError
+        if self.set == 'train':
+            sample = torch.load(os.path.join(self.folder, 'data', f'sample_{i}.pt'))
+            doys = torch.load(os.path.join(self.folder, 'data', f'doy_{i}.pt'))
+
+        label = self.labels[i]
+
+        sample = sample / self.quantification_value
+
+        return sample, doys, label
