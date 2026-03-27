@@ -1,14 +1,27 @@
-Deep Learning for Image Analysis @ AgroParisTech
-===========================================
+# Deep Learning for Image Analysis @ AgroParisTech
 
-This repo hosts the tutorials on deep learning for image analysis organized at AgroParisTech as part of 
-the IODAA master's program. It is under construction, and we expect some bugs and issues. 
-Feel free to send feedback at romain dot thoreau at agroparistech dot fr.
+This repository hosts tutorials on deep learning for image analysis organized at **AgroParisTech** as part of the **IODAA master's program**. It is currently under construction, so some bugs or issues may appear.  
+For feedback, contact: romain.dot.thoreau@agroparistech.fr
 
-You can look at the notebooks in a nicer format at https://dl4ia.readthedocs.io/en/latest/.
+You can view the notebooks in a **nicer format** here: [DL4IA Documentation](https://dl4ia.readthedocs.io/en/latest/)
 
-This repo, in its format, is inspired by the [UvA Deep Learning Tutorials](https://github.com/phlippe/uvadlc_notebooks/tree/master).
+This repository is inspired by the [UvA Deep Learning Tutorials](https://github.com/phlippe/uvadlc_notebooks/tree/master).
 
-===========================================
+---
 
-This repository collects my hands-on work from a series of advanced tutorials covering a range of topics in deep learning and remote sensing. It includes exercises on transformer-based classification of satellite image time series, MRI reconstruction with deep learning, and self-supervised learning of visual representations. The code and notebooks reflect my experimentation, learning process, and implementation of key concepts from each session.
+## Overview
+
+This repository collects my **hands-on work** from a series of advanced tutorials covering a range of topics in deep learning and remote sensing:
+
+- **Classification of Satellite Image Time Series with Transformers**  
+  Hands-on exercises on applying transformer models to multi-temporal satellite imagery.
+
+- **Deep Learning for MRI Reconstruction**  
+  Exploration of instabilities, hallucinations, and reconstruction strategies in MRI using deep learning.
+
+- **Self-Supervised Learning of Visual Representations**  
+  Practical exercises on learning feature representations without explicit labels.
+
+The notebooks reflect my **experimentation, learning process, and implementations** of key concepts from each session.
+
+---
